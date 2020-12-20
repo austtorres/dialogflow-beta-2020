@@ -97,7 +97,7 @@ class App extends React.Component {
           redirect: 'follow'
         };
 
-        let response = await fetch(window.$ENDPOINT_URL + '/application', requestOptions);
+        let response = await fetch('https://mysqlcs639.cs.wisc.edu/application', requestOptions);
         if(!response.ok) {
           throw new Error()
         }
@@ -120,7 +120,7 @@ class App extends React.Component {
               redirect: 'follow'
             }
 
-            await fetch(window.$ENDPOINT_URL + '/application', requestOptions);
+            await fetch('https://mysqlcs639.cs.wisc.edu/application', requestOptions);
           }
           else { // update server route
             let body = JSON.stringify({page: serverRoute, dialogflowUpdated: false});
@@ -132,7 +132,7 @@ class App extends React.Component {
               redirect: 'follow'
             }
 
-            await fetch(window.$ENDPOINT_URL + '/application', requestOptions);
+            await fetch('https://mysqlcs639.cs.wisc.edu/application', requestOptions);
           }
         }
         else { // check for back (from server)
@@ -152,7 +152,7 @@ class App extends React.Component {
               redirect: 'follow'
             }
 
-            await fetch(window.$ENDPOINT_URL + '/application', requestOptions);
+            await fetch('https://mysqlcs639.cs.wisc.edu/application', requestOptions);
           }
         }
 
@@ -234,7 +234,7 @@ class App extends React.Component {
       redirect: 'follow'
     };
 
-    let response = await fetch(window.$ENDPOINT_URL + '/categories/', requestOptions);
+    let response = await fetch('https://mysqlcs639.cs.wisc.edu/categories/', requestOptions);
     let result = await response.json();
 
     this.setState({categories: result.categories})
@@ -251,7 +251,7 @@ class App extends React.Component {
       redirect: 'follow'
     };
 
-    let response = await fetch(window.$ENDPOINT_URL + '/products/', requestOptions);
+    let response = await fetch('https://mysqlcs639.cs.wisc.edu/products/', requestOptions);
     let result = await response.json();
 
     this.setState({products: result.products})
@@ -269,7 +269,7 @@ class App extends React.Component {
     };
 
     try {
-      let response = await fetch(window.$ENDPOINT_URL + '/login/', requestOptions);
+      let response = await fetch('https://mysqlcs639.cs.wisc.edu/login/', requestOptions);
       let result = await response.json();
       if(!('token' in result)) {
         localStorage.setItem('auth', false);
@@ -313,7 +313,7 @@ class App extends React.Component {
     };
 
     try {
-      let response = await fetch(window.$ENDPOINT_URL + '/users/', requestOptions)
+      let response = await fetch('https://mysqlcs639.cs.wisc.edu/users/', requestOptions)
       let result = await response.json();
       if(!('message' in result) || result.message !== 'User created!') {
         return false;
