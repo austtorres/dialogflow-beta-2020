@@ -63,18 +63,23 @@ async function addMessage(person, message) {
 
   // For debugging
   message = serverResponse.message;
+  console.log("message:", message)
 }
 
 
 // Empty messages
 async function deleteChat() {
-  await fetch("https://mysqlcs639.cs.wisc.edu/application/messages/", {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      "x-access-token": token,
-    },
-  });
+  url = 'https://mysqlcs639.cs.wisc.edu//application/messages';
+  let request = {
+    method: 'DELETE',
+    headers: {'Content-Type': 'application/json',
+      'x-access-token': token},
+    redirect: 'follow'
+  };
+  const serverReturn = await fetch(url, request)
+  const serverResponse = await serverReturn.json()
+  message = serverResponse.message;
+  console.log("message:", message)
 }
 
 
@@ -104,7 +109,7 @@ app.post("/", express.json(), (req, res) => {
 
   async function welcome() {
     agent.add('Webhook works!')
-    console.log(ENDPOINT_URL)
+    console.log("Here is the endpoint URL: " + ENDPOINT_URL)
   }
 
   // Log in by giving username and password to get a token
@@ -112,9 +117,9 @@ app.post("/", express.json(), (req, res) => {
     username = agent.parameters.username;
     password = agent.parameters.password;
     token = await getToken();
-    let test = "";
+    let check= "";
     await deleteChat();
-    await addMessage( "user" , agent.query);
+    await addMessage("user", agent.query);
     await fetch("https://mysqlcs639.cs.wisc.edu/application", {
       method: "PUT",
       headers: {
@@ -126,13 +131,13 @@ app.post("/", express.json(), (req, res) => {
       .then((resp) => resp.json())
       .then((resp) => {
         console.log(resp);
-        test = resp.message;
+        check= resp.message;
       })
       .catch((error) => {
         console.log(error);
       });
-    await addMessage( "agent" , "You are logged in as " + username);
-    if (test != "Token is invalid!") {
+    await addMessage("agent", "You are logged in as " + username);
+    if (check!= "Token is invalid!") {
       agent.add("You are logged in as " + username);
     } else {
       agent.add("Incorrect username or password");
@@ -141,7 +146,7 @@ app.post("/", express.json(), (req, res) => {
 
   // User is able to request information about categories
   async function searchCategories() {
-    await addMessage( "user" , agent.query);
+    await addMessage("user", agent.query);
     await fetch("https://mysqlcs639.cs.wisc.edu/categories", {
       method: "GET",
       headers: {
@@ -168,12 +173,12 @@ app.post("/", express.json(), (req, res) => {
       }
     }
     agent.add(message);
-    await addMessage( "agent" , message);
+    await addMessage("agent", message);
   }
 
   // Request info about tag
   async function searchTag() {
-    await addMessage( "user" , agent.query);
+    await addMessage("user", agent.query);
     await fetch(
       "https://mysqlcs639.cs.wisc.edu/categories/" +
       agent.parameters.categories +
@@ -199,7 +204,7 @@ app.post("/", express.json(), (req, res) => {
       let message = "The tags are ";
       for (let i = 0; i < tags.length; i++) {
         if (i == 0) {
-          message += tags[i] + "";
+          message += tags[i] + " ";
         } else if (i < tags.length - 1) {
           message += ", " + tags[i];
         } else {
@@ -207,17 +212,17 @@ app.post("/", express.json(), (req, res) => {
         }
       }
       agent.add(message);
-      await addMessage( "agent" , message);
+      await addMessage("agent", message);
     }
     else {
       agent.add("What tags do you want to filter by?");
-      await addMessage( "agent" , "What tags do you want to filter by?")
+      await addMessage("agent", "What tags do you want to filter by?")
     }
 
   }
   // Get info like ratings, reviews, and product details
   async function searchItem() {
-    await addMessage( "user" , agent.query);
+    await addMessage("user", agent.query);
     let id = productids[agent.parameters.products];
 
     if (id !== -1) {
@@ -257,12 +262,12 @@ app.post("/", express.json(), (req, res) => {
         });
 
       let message =
-        "The " + productinfo.name + " costs $ " + productinfo.price + ". ";
+        "The " + productinfo.name + " costs $" + productinfo.price + ". ";
       let totalStars = 0;
       for (let i = 0; i < productreviews.length; i++) {
         if (i == 0) {
           message +=
-            "Here are the reviews: " +
+            "The reviews are: " +
             productreviews[i].text +
             " Rating: " +
             productreviews[i].stars;
@@ -273,18 +278,18 @@ app.post("/", express.json(), (req, res) => {
         ". This product is rated " +
         totalStars / productreviews.length + " on average";
       agent.add(message);
-      await addMessage( "agent" , message);
+      await addMessage("agent", message);
     } else {
       let message =
         "Whoops! I couldn't find that for you. Please try again.";
       agent.add(message);
-      await addMessage( "agent" , message);
+      await addMessage("agent", message);
     }
   }
 
   // Filter by tags
   async function selectTags() {
-    await addMessage( "user" , agent.query);
+    await addMessage("user", agent.query);
     let tag = agent.parameters.tag;
     await fetch("https://mysqlcs639.cs.wisc.edu/tags", {
       method: "GET",
@@ -313,16 +318,16 @@ app.post("/", express.json(), (req, res) => {
       });
       let message = "Page has been filtered by: " + tag;
       agent.add(message);
-      await addMessage( "agent" , message);
+      await addMessage("agent", message);
     } else {
       let message = "I couldn't find that tag. Please try again.";
       agent.add(message);
-      await addMessage( "agent" , message);
+      await addMessage("agent", message);
     }
   }
 
   async function removeTags() {
-    await addMessage( "user" , agent.query);
+    await addMessage("user", agent.query);
     let tag = agent.parameters.tag;
 
     await fetch("https://mysqlcs639.cs.wisc.edu/application/tags", {
@@ -352,22 +357,20 @@ app.post("/", express.json(), (req, res) => {
       });
       let message = "Page is now not being filtered by: " + tag;
       agent.add(message);
-      await addMessage( "agent" , message);
+      await addMessage("agent", message);
     } else {
       let message = "No valid tag, please try filtering again";
       agent.add(message);
-      await addMessage( "agent" , message);
+      await addMessage("agent", message);
     }
   }
 
   // Add items to cart
   async function addCart() {
-    await addMessage( "user" , agent.query);
+    await addMessage("user", agent.query);
     let id = productids[agent.parameters.products];
-    let number = agent.parameters.number;
-    if (agent.parameters.number == "") {
-      number = 1;
-    }
+    let number = agent.parameters.number ? agent.parameters.number : 1;
+    
 
     // Loop through all ids
     if (id !== -1) {
@@ -384,17 +387,17 @@ app.post("/", express.json(), (req, res) => {
       }
       let message = "Successfully added " + number + " " + agent.parameters.products + " to your cart!";
       agent.add(message);
-      await addMessage( "agent" , message);
+      await addMessage("agent", message);
 
     } else {
       let message =
         "Couldn't find the item that you specified, please try again.";
       agent.add(message);
-      await addMessage( "agent" , message);
+      await addMessage("agent", message);
     }
   }
   async function removeCart() {
-    await addMessage( "user" , agent.query);
+    await addMessage("user", agent.query);
     let id = productids[agent.parameters.products];
     let number = agent.parameters.number;
     if (agent.parameters.number == "") {
@@ -413,17 +416,17 @@ app.post("/", express.json(), (req, res) => {
       }
       let message = "Successfully removed " + number + " " + agent.parameters.products + " from your cart!";
       agent.add(message);
-      await addMessage( "agent" , message);
+      await addMessage("agent", message);
     } else {
       let message =
         "Couldn't find the item that you specified, please try again";
       agent.add(message);
-      await addMessage( "agent" , message);
+      await addMessage("agent", message);
     }
   }
 
   async function emptyCart() {
-    await addMessage( "user" , agent.query);
+    await addMessage("user", agent.query);
     let url = "https://mysqlcs639.cs.wisc.edu/application/products/";
     await fetch(url, {
       method: "DELETE",
@@ -433,7 +436,7 @@ app.post("/", express.json(), (req, res) => {
       },
     });
     agent.add("Your cart was cleared");
-    await addMessage( "agent" , "Your cart has been cleared!");
+    await addMessage("agent", "Your cart has been cleared!");
   }
 
   async function finishCart() {
@@ -450,7 +453,7 @@ app.post("/", express.json(), (req, res) => {
 
   // Review and confirm cart
   async function confirmCart() {
-    await addMessage( "user" , agent.query);
+    await addMessage("user", agent.query);
     let cart = [];
     await fetch("https://mysqlcs639.cs.wisc.edu/application/products", {
       method: "GET",
@@ -481,22 +484,192 @@ app.post("/", express.json(), (req, res) => {
     }
     message += ". The total price is " + price + ". ";
     agent.add(message);
-    await addMessage( "agent" , message);
+    await addMessage("agent", message);
     agent.add("Would you like to confirm this and finish payment?");
-    await addMessage( "agent" , "Would you like to confirm this and finish payment?");
+    await addMessage("agent", "Would you like to confirm this and finish payment?");
+    await cartNav();
   }
 
   async function acceptCart() {
-    await addMessage( "user" , agent.query);
+    await addMessage("user", agent.query);
     agent.add("Your order has been placed! Thank you!");
-    await addMessage( "agent" , "Your order has been placed! Thank you!");
+    await addMessage("agent", "Your order has been placed! Thank you!");
+    await cartNav();
     await finishCart();
   }
 
   async function rejectCart() {
-    await addMessage( "user" , agent.query);
+    await addMessage("user", agent.query);
     agent.add("No problem! You can continue browsing.");
-    await addMessage( "agent" , "No problem! You can continue browsing.");
+    await addMessage("agent", "No problem! You can continue browsing.");
+  }
+
+  async function getProductList() {
+    productList = {}
+    let request = {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json', },
+      redirect: 'follow'
+    }
+    const serverReturn = await fetch('https://mysqlcs639.cs.wisc.edu/products', request)
+    const serverResponse = await serverReturn.json()
+    let tempProducts = serverResponse.products
+    tempProducts.forEach(prod => productList[prod.name] = prod);
+    console.log("Dynamically created product list.")
+    console.log(productList)
+  }
+
+  async function HomeNav() {
+    let page = agent.parameters.pages;
+    page = "/" + username;
+
+    await fetch("https://mysqlcs639.cs.wisc.edu/application", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-token": token,
+      },
+      body: JSON.stringify({ page: page }),
+    })
+      .then((resp) => resp.json())
+      .then((resp) => {
+        console.log(resp);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    await addMessage("user", agent.query);
+    let outputMessage = "Taking you home!";
+    await addMessage("agent", outputMessage);
+    agent.add(outputMessage);
+  }
+
+  async function SignUpNav() {
+    let page = agent.parameters.pages;
+    page = "/signUp";
+    await deleteChat();
+
+    await fetch("https://mysqlcs639.cs.wisc.edu/application", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-token": token,
+      },
+      body: JSON.stringify({ page: page }),
+    })
+      .then((resp) => resp.json())
+      .then((resp) => {
+        console.log(resp);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    await addMessage("user", agent.query);
+    let outputMessage = "Going to sign up!";
+    await addMessage("agent", outputMessage);
+    agent.add(outputMessage);
+  }
+
+  async function SignInNav() {
+    let page = agent.parameters.pages;
+    page = "/signIn";
+    await deleteChat();
+
+    await fetch("https://mysqlcs639.cs.wisc.edu/application", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-token": token,
+      },
+      body: JSON.stringify({ page: page }),
+    })
+      .then((resp) => resp.json())
+      .then((resp) => {
+        console.log(resp);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    await addMessage("user", agent.query);
+    let outputMessage = "Lets go sign in.";
+    await addMessage("agent", outputMessage);
+    agent.add(outputMessage);
+  }
+
+  async function emptyPageNav() {
+    agent.add("Should go to product page")
+    let id = productids[agent.parameters.products];
+    let info = [];
+    await fetch("https://mysqlcs639.cs.wisc.edu/products" + "/" + id, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-token": token,
+      },
+    })
+      .then((resp) => resp.json())
+      .then((resp) => {
+        info = resp.category;
+        console.log(info);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    page = "/" + username + "/" + info + "/products/" + productids[agent.parameters.products];
+    await addMessage("user", agent.query);
+    let outputMessage = "Taking you there!";
+    await addMessage("agent", outputMessage);
+    agent.add(outputMessage);
+  }
+
+  async function ProductPageNav() {
+    let page = agent.parameters.pages;
+    page = "/" + username + "/" + agent.parameters.pages;
+
+    await fetch("https://mysqlcs639.cs.wisc.edu/application", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-token": token,
+      },
+      body: JSON.stringify({ page: page }),
+    })
+      .then((resp) => resp.json())
+      .then((resp) => {
+        console.log(resp);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    await addMessage("user", agent.query);
+    let outputMessage = "Taking you there!";
+    await addMessage("agent", outputMessage);
+    agent.add(outputMessage);
+  }
+
+  async function cartNav() {
+    let page = agent.parameters.pages;
+    page = "/" + username + "/" + "cart";
+
+    await fetch("https://mysqlcs639.cs.wisc.edu/application", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-token": token,
+      },
+      body: JSON.stringify({ page: page }),
+    })
+      .then((resp) => resp.json())
+      .then((resp) => {
+        console.log(resp);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    //await addMessage("user", agent.query);
+    let outputMessage = "Here is what your cart looks like now.";
+    await addMessage("agent", outputMessage);
+    agent.add(outputMessage);
   }
 
   // Navigate between pages
@@ -504,43 +677,23 @@ app.post("/", express.json(), (req, res) => {
     let page = agent.parameters.pages;
     console.log(page);
     if ((page === "homepage") || (page === "back")) {
-      page = "/" + username;
+      HomeNav();
     } else if (page === "signup") {
-      page = "/signUp";
-      await deleteChat();
+      SignUpNav();
     } else if (page === "signin") {
-      page = "/signIn";
-      await deleteChat();
+      SignInNav();
     } else if (page === "welcome") {
       page = "/";
       await deleteChat();
     } else if (agent.parameters.pages === "") {
-      agent.add("Should go to product page")
-      let id = productids[agent.parameters.products];
-      let info = [];
-      await fetch("https://mysqlcs639.cs.wisc.edu/products" + "/" + id, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "x-access-token": token,
-        },
-      })
-        .then((resp) => resp.json())
-        .then((resp) => {
-          info = resp.category;
-          console.log(info);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-      page = "/" + username + "/" + info + "/products/" + productids[agent.parameters.products];
+      emptyPageNav();
     }
     else if (page === agent.parameters.pages) {
-      page = "/" + username + "/" + agent.parameters.pages;
+      ProductPageNav();
     }
 
     else if (page === cart) {
-      page = "/" + username + "/" + "cart";
+      cartNav();
     }
 
     await fetch("https://mysqlcs639.cs.wisc.edu/application", {
@@ -558,15 +711,10 @@ app.post("/", express.json(), (req, res) => {
       .catch((error) => {
         console.log(error);
       });
-    await addMessage( "user" , agent.query);
-    let outputMessage = "Taking you there!";
-    await addMessage( "agent" , outputMessage);
-    agent.add(outputMessage);
   }
 
   let intentMap = new Map();
   intentMap.set("Default Welcome Intent", welcome);
-  // You will need to declare this `Login` content in DialogFlow to make this work
   intentMap.set("Login", login);
   intentMap.set("QueryCategories", searchCategories);
   intentMap.set("QueryTags", searchTag);
